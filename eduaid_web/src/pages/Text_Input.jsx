@@ -8,11 +8,11 @@ import Switch from "react-switch";
 
 const Text_Input = () => {
   const [text, setText] = useState("");
+  const [errorText, setErrorText] = useState("");
   const [difficulty, setDifficulty] = useState("Easy Difficulty");
   const [numQuestions, setNumQuestions] = useState(10);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
-  const [fileContent, setFileContent] = useState("");
   const [docUrl, setDocUrl] = useState("");
   const [isToggleOn, setIsToggleOn] = useState(0);
 
@@ -32,10 +32,15 @@ const Text_Input = () => {
           body: formData,
         });
         const data = await response.json();
-        setText(data.content || data.error);
+        if (data.content) {
+          setText(data.content);
+          setErrorText("");
+        } else {
+          setErrorText(data.error || "Unknown error");
+        }
       } catch (error) {
         console.error("Error uploading file:", error);
-        setText("Error uploading file");
+        setErrorText("Error uploading file");
       }
     }
   };
@@ -65,14 +70,14 @@ const Text_Input = () => {
         if (response.ok) {
           const data = await response.json();
           setDocUrl("");
-          setText(data || "Error in retrieving");
+          data ? setText(data):setErrorText("Error in retrieving");
         } else {
           console.error("Error retrieving Google Doc content");
-          setText("Error retrieving Google Doc content");
+          setErrorText("Error retrieving Google Doc content");
         }
       } catch (error) {
         console.error("Error:", error);
-        setText("Error retrieving Google Doc content");
+        setErrorText("Error retrieving Google Doc content");
       } finally {
         setLoading(false);
       }
@@ -169,6 +174,24 @@ const Text_Input = () => {
         </div>
       )}
 
+      {/*Pop up to display when error occurs while uploading tthe file*/}
+      {errorText && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#02000F] bg-opacity-40 backdrop-blur-sm">
+          <div className="bg-gradient-to-r from-[#7600F2] to-[#00CBE7] rounded-2xl p-1 max-w-md w-full">
+            <div className="bg-black rounded-2xl p-6 text-center text-white">
+              <div className="text-xl font-extrabold mb-3">Error</div>
+              <div className="mb-6 text-white/90">{errorText}</div>
+              <button
+                className="bg-gradient-to-r from-[#7600F2] to-[#00CBE7] hover:opacity-90 transition rounded-xl px-5 py-2 font-semibold"
+                onClick={() => setErrorText("")}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={`w-full h-full bg-cust bg-opacity-50 ${loading ? "pointer-events-none" : ""}`}>
         {/* Header */}
         <a href="/" className="block">
@@ -183,7 +206,7 @@ const Text_Input = () => {
 
         {/* Headline */}
         <div className="text-white text-center sm:text-right mx-4 sm:mx-8">
-          <div className="text-xl sm:text-2xl font-bold">Enter the Content</div>
+          <div className="text-xl sm:text-2xl font-bold">Enter fuck Content</div>
           <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 text-xl font-bold">
             to Generate{" "}
             <span className="bg-gradient-to-r from-[#7600F2] to-[#00CBE7] text-transparent bg-clip-text">Questionaries</span>
